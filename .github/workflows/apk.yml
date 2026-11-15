@@ -16,16 +16,32 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
-      - name: Install packages
-        run: npm install
+      - run: npm install
 
-      - name: Add Android project
-        run: npx cap add android
+      - run: npx cap add android
 
-      - name: Sync web files
-        run: npx cap sync android
+      - run: npx cap sync android
+
+      - name: Add microphone permission
+        run: |
+          python3 - << 'PY'
+          import pathlib
+          p = pathlib.Path("android/app/src/main/AndroidManifest.xml")
+          t = p.read_text()
+          if "RECORD_AUDIO" not in t:
+              add = '<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <queries><intent><action android:name="android.speech.RecognitionService" /></intent></queries>\n    '
+              t = t.replace("<application", add + "<application")
+              p.write_text(t)
+          print("Manifest OK")
+          PY
+
+      - name: Restore permanent signing key
+        env:
+          KS: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KS" ]; then mkdir -p ~/.android && printf "%s" "$KS" | base64 --decode > ~/.android/debug.keystore && echo "Permanent key restored"; else echo "No secret, using default key"; fi
 
       - name: Build APK
         working-directory: android
