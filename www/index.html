@@ -1,593 +1,416 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<title>Kharcha · Glassy Tracker</title>
-<meta name="theme-color" content="#0b0d1a">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kharcha">
-<link rel="apple-touch-icon" id="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%238AA8FF'/%3E%3Cstop offset='1' stop-color='%23C79BFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='42' fill='url(%23g)'/%3E%3Ctext x='90' y='124' font-size='98' font-family='system-ui' font-weight='700' fill='white' text-anchor='middle'%3E%E2%82%B9%3C/text%3E%3C/svg%3E">
-<link rel="manifest" id="mf">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --glass:rgba(255,255,255,.075);--glass2:rgba(255,255,255,.13);
-  --stroke:rgba(255,255,255,.17);--txt:#f6f8ff;--muted:rgba(232,238,255,.6);
-  --a:#8AA8FF;--b:#C79BFF;--good:#5FE0C0;--bad:#FF7E9D;--r:22px;
-  --ease:cubic-bezier(.22,1,.36,1);
-}
-html,body{height:100%;overscroll-behavior:none}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",system-ui,sans-serif;
-  background:#080a16;color:var(--txt);letter-spacing:-.01em;
-  -webkit-font-smoothing:antialiased;
-}
-/* animated glassy background */
-.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
-  radial-gradient(120% 90% at 10% 0%,#1b2350 0%,transparent 55%),
-  radial-gradient(110% 90% at 100% 100%,#2a1442 0%,transparent 55%),#080a16}
-.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;animation:float 16s var(--ease) infinite alternate}
-.b1{width:70vw;height:70vw;left:-20vw;top:-10vh;background:#4f6bff}
-.b2{width:60vw;height:60vw;right:-22vw;top:22vh;background:#a24bff;animation-duration:20s;animation-delay:-4s}
-.b3{width:55vw;height:55vw;left:12vw;bottom:-18vh;background:#12b9a8;opacity:.32;animation-duration:22s;animation-delay:-9s}
-@keyframes float{to{transform:translate3d(7vw,-6vh,0) scale(1.18)}}
-.bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35))}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Expense</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a16">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #070714;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --neon-blue: #00f2fe;
+            --neon-purple: #9b51e0;
+            --neon-pink: #ff2a85;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); background-image: radial-gradient(circle at 10% 20%, rgba(155, 81, 224, 0.25) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.2) 0%, transparent 40%); background-attachment: fixed; color: var(--text-main); min-height: 100vh; padding-bottom: 50px; overflow-x: hidden; }
+        
+        /* Lock Screen Style */
+        #lockScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.4s ease; }
+        .lock-icon { font-size: 50px; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--neon-blue)); }
+        .pin-input { width: 200px; text-align: center; font-size: 24px; letter-spacing: 10px; padding: 15px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon-blue); color: white; margin-bottom: 20px; outline: none; }
+        .pin-btn { padding: 15px 40px; border-radius: 20px; border: none; background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); color: black; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .forgot-pin { margin-top: 25px; font-size: 12px; color: var(--text-muted); text-decoration: underline; cursor: pointer; }
 
-.app{max-width:520px;margin:0 auto;min-height:100%;position:relative}
-.glass{
-  background:var(--glass);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
-  border:1px solid var(--stroke);border-radius:var(--r);
-  box-shadow:0 18px 46px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.22);
-}
-/* nav */
-.nav{position:sticky;top:0;z-index:20;padding:calc(env(safe-area-inset-top) + 18px) 20px 12px;
-  background:rgba(10,12,26,.42);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);
-  border-bottom:1px solid rgba(255,255,255,.09)}
-.nav small{display:block;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.nav h1{font-size:32px;font-weight:800;letter-spacing:-.04em;line-height:1.1;
-  background:linear-gradient(100deg,#fff 10%,var(--a) 55%,var(--b) 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
-main{padding:16px 16px 130px}
-.view{display:none;animation:viewIn .42s var(--ease) both}
-.view.active{display:block}
-@keyframes viewIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
-.card{padding:18px;margin-bottom:14px;animation:cardIn .5s var(--ease) both}
-.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.12s}
-@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.lbl{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.07em;text-transform:uppercase}
-.big{font-size:42px;font-weight:800;letter-spacing:-.045em;line-height:1.1;margin-top:6px}
-.sub{color:var(--muted);font-size:13px;margin-top:6px}
+        .container { max-width: 450px; margin: 0 auto; padding: 20px 16px; display: none; }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--card-border); border-radius: 28px; padding: 22px; margin-bottom: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); animation: fadeIn 0.6s ease-out; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header h1 { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #fff, var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; box-shadow: 0 0 15px rgba(255, 42, 133, 0.4); }
+        .balance-card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); position: relative; overflow: hidden; }
+        .balance-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); filter: blur(50px); opacity: 0.6; }
+        .balance-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;}
+        .balance-amount { font-size: 38px; font-weight: 800; margin: 8px 0 16px 0; letter-spacing: -0.5px; }
+        .budget-stats { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; }
+        .stat-item p { font-size: 13px; color: var(--text-muted); font-weight: 500;}
+        .stat-item h3 { font-size: 18px; font-weight: 700; margin-top: 2px; }
+        .chart-box { position: relative; height: 200px; display: flex; justify-content: center; align-items: center; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+        input, select { width: 100%; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); padding: 14px 18px; border-radius: 16px; color: #fff; font-size: 15px; outline: none; transition: all 0.3s; }
+        input:focus, select:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); background: rgba(255, 255, 255, 0.1); }
+        select option { background: #0f1026; color: #fff; }
+        .btn-add { width: 100%; padding: 16px; border: none; border-radius: 18px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #9b51e0 100%); color: #050510; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 25px rgba(0, 242, 254, 0.35); transition: transform 0.2s, box-shadow 0.2s; margin-top: 10px; }
+        .btn-add:active { transform: scale(0.97); box-shadow: 0 5px 15px rgba(0, 242, 254, 0.2); }
+        .btn-backup { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; box-shadow: none; font-size: 14px; }
+        .list-header { font-size: 16px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .tx-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); animation: slideIn 0.3s ease; }
+        .tx-left { display: flex; align-items: center; gap: 14px; }
+        .tx-icon { width: 44px; height: 44px; border-radius: 14px; background: rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .tx-title { font-size: 15px; font-weight: 600; }
+        .tx-date { font-size: 12px; color: var(--text-muted); }
+        .tx-amount { font-size: 16px; font-weight: 700; color: var(--neon-pink); }
+        .btn-del { background: none; border: none; color: rgba(255, 255, 255, 0.3); font-size: 22px; margin-left: 10px; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
+        .backup-container { display: flex; gap: 10px; }
 
-/* segmented */
-.seg{display:flex;position:relative;margin-top:16px;padding:4px;border-radius:15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
-.seg .pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:11px;
-  background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.12));
-  box-shadow:0 6px 18px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.4);
-  transition:transform .38s var(--ease);transform:translateX(calc(var(--i,1) * 100%))}
-.seg button{position:relative;z-index:1;flex:1;border:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:9px 0;cursor:pointer;transition:color .25s}
-.seg button.on{color:#fff}
-
-/* budget */
-.brow{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;font-size:13px}
-.track{height:9px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:9px;box-shadow:inset 0 1px 3px rgba(0,0,0,.3)}
-.fill{height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,var(--good),var(--a));transition:width .9s var(--ease),background .4s}
-.fill.over{background:linear-gradient(90deg,#FFB36B,var(--bad))}
-
-/* list */
-.grp{margin:18px 4px 9px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between}
-.item{display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:9px;border-radius:18px;
-  background:var(--glass);border:1px solid var(--stroke);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  animation:cardIn .45s var(--ease) both;transition:transform .25s var(--ease),background .25s}
-.item:active{transform:scale(.975);background:var(--glass2)}
-.item.gone{animation:gone .32s var(--ease) forwards}
-@keyframes gone{to{opacity:0;transform:translateX(-70px) scale(.9);height:0;padding:0;margin:0;border:0}}
-.emo{width:42px;height:42px;flex:0 0 42px;border-radius:14px;display:grid;place-items:center;font-size:20px;
-  background:color-mix(in srgb,var(--c) 26%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);
-  box-shadow:0 6px 16px color-mix(in srgb,var(--c) 22%,transparent)}
-.mid{flex:1;min-width:0}
-.mid b{display:block;font-size:15px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mid span{font-size:12px;color:var(--muted)}
-.right{text-align:right;flex:0 0 auto}
-.right b{display:block;font-size:16px;font-weight:750;letter-spacing:-.02em}
-.acts{display:flex;gap:6px;justify-content:flex-end;margin-top:5px;opacity:.55;transition:opacity .2s}
-.item:active .acts,.item:hover .acts{opacity:1}
-.acts button{border:0;width:26px;height:26px;border-radius:9px;background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer;transition:transform .2s var(--ease)}
-.acts button:active{transform:scale(.82)}
-.empty{text-align:center;padding:34px 18px;color:var(--muted);font-size:14px}
-.empty i{display:block;font-size:38px;font-style:normal;margin-bottom:10px;animation:bob 2.6s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-8px) rotate(6deg)}}
-
-/* insights */
-.donutbox{position:relative;width:210px;height:210px;margin:6px auto 4px}
-.donutbox svg{width:100%;height:100%;transform:rotate(-90deg)}
-.trk{fill:none;stroke:rgba(255,255,255,.08);stroke-width:22}
-.dc{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
-.dc b{font-size:26px;font-weight:800;letter-spacing:-.04em}
-.dc small{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-.leg{display:flex;align-items:center;gap:10px;margin-top:11px;font-size:13px;animation:cardIn .4s var(--ease) both}
-.dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;box-shadow:0 0 12px var(--c)}
-.leg .nm{flex:1;font-weight:600}
-.leg .pc{color:var(--muted);font-size:12px;width:38px;text-align:right}
-.leg .am{font-weight:750;width:82px;text-align:right}
-.mini{height:5px;border-radius:5px;background:rgba(255,255,255,.08);margin:5px 0 3px;overflow:hidden}
-.mini i{display:block;height:100%;width:0;border-radius:5px;background:var(--c);transition:width .8s var(--ease)}
-.bars{display:flex;align-items:flex-end;gap:8px;height:130px;margin-top:16px}
-.barcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}
-.bar{width:100%;max-width:30px;height:var(--h,0%);min-height:5px;border-radius:9px 9px 5px 5px;
-  background:linear-gradient(180deg,var(--a),var(--b));box-shadow:0 4px 16px rgba(138,168,255,.3);
-  transition:height .85s var(--ease);transition-delay:var(--d,0s)}
-.bar.today{background:linear-gradient(180deg,var(--good),#3aa8ff);box-shadow:0 4px 18px rgba(95,224,192,.4)}
-.barcol small{font-size:10px;color:var(--muted);font-weight:700}
-.barcol small b{display:block;color:var(--txt);font-size:10px;opacity:.75}
-.hi{padding:13px 15px;border-radius:16px;background:linear-gradient(120deg,rgba(138,168,255,.18),rgba(199,155,255,.12));
-  border:1px solid rgba(255,255,255,.16);font-size:13px;margin-top:14px}
-
-/* settings */
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
-.row:last-child{border-bottom:0}
-.row .t{font-size:14px;font-weight:650}.row .d{font-size:12px;color:var(--muted);margin-top:3px}
-input,select{font:inherit;color:#fff;background:rgba(255,255,255,.09);border:1px solid var(--stroke);
-  border-radius:13px;padding:12px 14px;outline:none;color-scheme:dark;transition:border .25s,box-shadow .25s,transform .25s var(--ease)}
-input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18);transform:scale(1.01)}
-.btn{border:0;border-radius:14px;padding:12px 16px;font:inherit;font-size:14px;font-weight:750;color:#08101f;cursor:pointer;
-  background:linear-gradient(120deg,#fff,#cfd9ff);box-shadow:0 10px 26px rgba(138,168,255,.28);transition:transform .22s var(--ease)}
-.btn:active{transform:scale(.93)}
-.btn.ghost{background:rgba(255,255,255,.1);color:#fff;box-shadow:none;border:1px solid var(--stroke)}
-.btn.danger{background:linear-gradient(120deg,#FF9BB4,#FF6F91);color:#2a0712}
-.confirm{display:none;gap:8px;margin-top:12px}.confirm.show{display:flex;animation:cardIn .3s var(--ease) both}
-
-/* FAB + tabbar */
-.fab{position:fixed;z-index:30;right:calc(50% - 260px + 20px);bottom:calc(env(safe-area-inset-bottom) + 84px);
-  width:58px;height:58px;border-radius:20px;border:1px solid rgba(255,255,255,.35);cursor:pointer;
-  background:linear-gradient(135deg,var(--a),var(--b));color:#fff;font-size:32px;font-weight:300;line-height:1;
-  box-shadow:0 16px 34px rgba(120,110,255,.5),inset 0 1px 0 rgba(255,255,255,.5);
-  transition:transform .3s var(--ease);animation:pop .6s var(--ease) .2s both}
-@media(max-width:540px){.fab{right:20px}}
-@keyframes pop{from{opacity:0;transform:scale(.4) rotate(-25deg)}to{opacity:1;transform:none}}
-.fab:active{transform:scale(.86) rotate(90deg)}
-.tabbar{position:fixed;z-index:25;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;display:flex;
-  padding:9px 12px calc(env(safe-area-inset-bottom) + 9px);gap:6px;
-  background:rgba(10,12,26,.5);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
-  border-top:1px solid rgba(255,255,255,.1)}
-.tabbar button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-size:10px;font-weight:700;
-  padding:7px 0;cursor:pointer;display:grid;gap:3px;place-items:center;border-radius:14px;transition:.25s var(--ease)}
-.tabbar button i{font-size:19px;font-style:normal;transition:transform .3s var(--ease)}
-.tabbar button.on{color:#fff;background:rgba(255,255,255,.09)}
-.tabbar button.on i{transform:translateY(-2px) scale(1.14)}
-
-/* sheet */
-.wrap{position:fixed;inset:0;z-index:50;background:rgba(4,6,14,.5);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
-  opacity:0;pointer-events:none;transition:opacity .3s}
-.wrap.open{opacity:1;pointer-events:auto}
-.sheet{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;padding:10px 18px calc(env(safe-area-inset-bottom) + 20px);
-  border-radius:30px 30px 0 0;transform:translateY(106%);transition:transform .45s var(--ease);
-  background:rgba(24,27,48,.72);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
-  border-top:1px solid rgba(255,255,255,.22);box-shadow:0 -20px 60px rgba(0,0,0,.5)}
-.wrap.open .sheet{transform:translateY(0)}
-.handle{width:38px;height:5px;border-radius:5px;background:rgba(255,255,255,.3);margin:2px auto 16px}
-.sheet h2{font-size:22px;font-weight:800;letter-spacing:-.03em;margin-bottom:14px}
-.amtbox{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.09);border:1px solid var(--stroke);border-radius:18px;padding:6px 16px;transition:.25s var(--ease)}
-.amtbox:focus-within{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18);transform:scale(1.012)}
-.amtbox span{font-size:26px;color:var(--a);font-weight:700}
-.amtbox input{flex:1;border:0;background:none;font-size:32px;font-weight:800;letter-spacing:-.04em;padding:8px 0;box-shadow:none;transform:none}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 2px 6px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;border:1px solid var(--stroke);background:rgba(255,255,255,.07);color:var(--muted);
-  border-radius:14px;padding:9px 13px;font:inherit;font-size:13px;font-weight:650;cursor:pointer;transition:.28s var(--ease)}
-.chip.on{color:#fff;background:color-mix(in srgb,var(--c) 30%,transparent);border-color:color-mix(in srgb,var(--c) 60%,transparent);
-  box-shadow:0 8px 22px color-mix(in srgb,var(--c) 25%,transparent);transform:translateY(-3px) scale(1.04)}
-.two{display:flex;gap:10px;margin-top:12px}.two>*{flex:1;min-width:0}
-.full{width:100%;margin-top:16px;padding:15px;font-size:15px}
-
-/* toast */
-.toast{position:fixed;z-index:60;left:16px;right:16px;max-width:488px;margin:0 auto;
-  bottom:calc(env(safe-area-inset-bottom) + 92px);padding:13px 15px;border-radius:17px;
-  display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;
-  background:rgba(28,32,56,.8);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border:1px solid rgba(255,255,255,.2);box-shadow:0 14px 40px rgba(0,0,0,.45);
-  transform:translateY(24px) scale(.96);opacity:0;pointer-events:none;transition:.38s var(--ease)}
-.toast.show{transform:none;opacity:1;pointer-events:auto}
-.toast span{flex:1}
-.toast button{border:0;background:linear-gradient(120deg,var(--a),var(--b));color:#08101f;font:inherit;font-weight:800;
-  font-size:12px;padding:8px 12px;border-radius:11px;cursor:pointer}
-@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}.blob{display:none}}
-</style>
+        /* Voice Assistant Button */
+        .voice-btn { position: fixed; bottom: 30px; right: 20px; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple)); border: none; font-size: 28px; color: white; box-shadow: 0 0 20px rgba(255, 42, 133, 0.6); cursor: pointer; z-index: 100; display: flex; justify-content: center; align-items: center; transition: all 0.3s; }
+        .voice-btn.recording { animation: pulse 1s infinite; background: linear-gradient(135deg, #ff0000, var(--neon-pink)); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 42, 133, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 42, 133, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 42, 133, 0); } }
+    </style>
 </head>
 <body>
-<div class="bg"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
 
-<div class="app">
-  <header class="nav">
-    <small>Mera paisa, mera hisaab</small>
-    <h1>Kharcha ✨</h1>
-  </header>
-
-  <main>
-    <!-- HOME -->
-    <section class="view active" id="v-home">
-      <div class="glass card">
-        <div class="lbl" id="rangeLbl">Is mahine ka kharcha</div>
-        <div class="big" id="total">₹0</div>
-        <div class="sub" id="countSub">Abhi koi entry nahi</div>
-        <div class="seg" id="seg">
-          <span class="pill"></span>
-          <button data-r="today">Aaj</button>
-          <button data-r="month" class="on">Mahina</button>
-          <button data-r="all">Sab</button>
-        </div>
-      </div>
-
-      <div class="glass card">
-        <div class="lbl">Monthly budget</div>
-        <div class="brow"><span id="budTxt">₹0 / ₹5,000</span><b id="budPct">0%</b></div>
-        <div class="track"><div class="fill" id="budFill"></div></div>
-        <div class="sub" id="budHint">Settings me budget badal sakte ho</div>
-      </div>
-
-      <div id="list"></div>
-    </section>
-
-    <!-- INSIGHTS -->
-    <section class="view" id="v-graph">
-      <div class="glass card">
-        <div class="lbl">Paise kaha gaye? <span id="gRange"></span></div>
-        <div class="donutbox">
-          <svg viewBox="0 0 200 200" id="donut"><circle class="trk" cx="100" cy="100" r="76"></circle><g id="arcs"></g></svg>
-          <div class="dc"><b id="dcTotal">₹0</b><small>total</small></div>
-        </div>
-        <div id="legend"></div>
-        <div class="hi" id="hiCard">✨ Abhi data nahi hai — pehle ek kharcha add karo.</div>
-      </div>
-
-      <div class="glass card">
-        <div class="lbl">Pichhle 7 din</div>
-        <div class="bars" id="bars"></div>
-      </div>
-    </section>
-
-    <!-- SETTINGS -->
-    <section class="view" id="v-set">
-      <div class="glass card">
-        <div class="lbl">Budget set karo</div>
-        <div class="two" style="margin-top:12px">
-          <input id="budInput" type="number" inputmode="numeric" placeholder="5000">
-          <button class="btn" id="saveBud">Save</button>
-        </div>
-        <div class="sub">80% pe halka alert, 100% cross pe toast aayega 🔔</div>
-      </div>
-
-      <div class="glass card">
-        <div class="lbl">Backup & data</div>
-        <div class="row"><div><div class="t">📤 CSV export</div><div class="d">Phone me file download / copy</div></div><button class="btn ghost" id="exp">Export</button></div>
-        <div class="row"><div><div class="t">📥 CSV import</div><div class="d">Naye phone me purana data wapas lao</div></div><button class="btn ghost" id="imp">Import</button></div>
-        <input type="file" id="file" accept=".csv,text/csv" hidden>
-        <div class="row"><div><div class="t">🔒 Privacy</div><div class="d" id="storeInfo">Data sirf is phone ke browser me hai. Server nahi.</div></div></div>
-        <div class="row"><div><div class="t">🗑️ Sab mitao</div><div class="d">Pakka confirm hoga</div></div><button class="btn ghost" id="clr">Clear</button></div>
-        <div class="confirm" id="confirm"><button class="btn danger" id="yesClr" style="flex:1">Haan, sab mitao</button><button class="btn ghost" id="noClr" style="flex:1">Nahi rehne do</button></div>
-      </div>
-      <div class="sub" style="text-align:center;margin-top:6px">Kharcha v1.0 · glassy 💎 · offline ✅</div>
-    </section>
-  </main>
-
-  <button class="fab" id="fab" aria-label="Kharcha add karo">+</button>
-
-  <nav class="tabbar">
-    <button data-t="home" class="on"><i>🧾</i>Kharche</button>
-    <button data-t="graph"><i>📊</i>Graph</button>
-    <button data-t="set"><i>⚙️</i>Setting</button>
-  </nav>
-</div>
-
-<!-- ADD / EDIT SHEET -->
-<div class="wrap" id="wrap">
-  <div class="sheet">
-    <div class="handle"></div>
-    <h2 id="sheetTitle">Naya kharcha ➕</h2>
-    <div class="amtbox"><span>₹</span><input id="fAmt" type="text" inputmode="decimal" placeholder="0"></div>
-    <div class="chips" id="chips"></div>
-    <div class="two">
-      <input id="fNote" type="text" placeholder="Note (e.g. chai / auto)" maxlength="60">
-      <input id="fDate" type="date">
+    <!-- Lock Screen -->
+    <div id="lockScreen">
+        <div class="lock-icon" id="lockIcon">🔒</div>
+        <h2 id="lockTitle" style="margin-bottom: 20px; font-weight: 700;">अपना 4-अंकों का PIN डालें</h2>
+        <input type="password" id="pinInput" class="pin-input" maxlength="4" inputmode="numeric" placeholder="****">
+        <button class="pin-btn" onclick="handleLogin()" id="pinBtn">Unlock</button>
+        <div class="forgot-pin" onclick="resetApp()">PIN भूल गए? (Reset App)</div>
     </div>
-    <div class="two" style="margin-top:10px">
-      <button class="btn ghost" id="cancel">Cancel</button>
-      <button class="btn" id="save">Add karo</button>
+
+    <!-- Main App -->
+    <div class="container" id="mainApp">
+        <div class="header">
+            <div>
+                <p style="font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom:2px;">स्वागत है</p>
+                <h1>स्मार्ट खर्चा</h1>
+            </div>
+            <div class="avatar">₹</div>
+        </div>
+
+        <div class="glass-card balance-card">
+            <div class="balance-title">बची हुई राशि</div>
+            <div class="balance-amount" id="remainingBalance">₹0</div>
+            <div class="budget-stats">
+                <div class="stat-item">
+                    <p>कुल बजट</p>
+                    <h3 id="budgetDisplay" onclick="changeBudget()" style="cursor: pointer; color: var(--neon-blue);">₹0 ✎</h3>
+                </div>
+                <div class="stat-item" style="text-align: right;">
+                    <p>कुल खर्च</p>
+                    <h3 id="totalExpense" style="color: var(--neon-pink);">₹0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text-muted);">खर्च का ग्राफ</h3>
+            <div class="chart-box"><canvas id="expenseChart"></canvas></div>
+        </div>
+
+        <div class="glass-card">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">+ नया खर्च जोड़ें</h3>
+            <div class="input-group">
+                <label>राशि (₹)</label>
+                <input type="number" id="amount" placeholder="जैसे: 250" inputmode="numeric">
+            </div>
+            <div class="input-group">
+                <label>श्रेणी (किस चीज़ पर खर्च हुआ?)</label>
+                <select id="category">
+                    <option value="Food">🍔 खाना / चाय-नाश्ता</option>
+                    <option value="Travel">🚗 पेट्रोल / ऑटो / सफ़र</option>
+                    <option value="Shopping">🛍️ खरीदारी / कपड़े</option>
+                    <option value="Bills">⚡ रिचार्ज / बिल</option>
+                    <option value="Entertainment">🎬 मूवीज़ / मस्ती</option>
+                    <option value="Other">💡 अन्य (Other)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>विवरण (कहाँ खर्च किया?)</label>
+                <input type="text" id="note" placeholder="जैसे: दुकान या दोस्तों के साथ">
+            </div>
+            <button class="btn-add" onclick="addExpense()">खर्च जोड़ें</button>
+        </div>
+
+        <div class="glass-card">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-muted);">डेटा सुरक्षा (बैकअप)</h3>
+            <div class="backup-container">
+                <button class="btn-add btn-backup" onclick="backupData()">📤 बैकअप (सेव करें)</button>
+                <button class="btn-add btn-backup" onclick="restoreData()">📥 रिस्टोर करें</button>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">ऐप अपडेट या अनइंस्टॉल से पहले बैकअप ले लें।</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="list-header">
+                <span>हाल का खर्च</span>
+                <span id="txCount" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">0 प्रविष्टियाँ</span>
+            </div>
+            <div id="expenseList"></div>
+        </div>
     </div>
-  </div>
-</div>
 
-<div class="toast" id="toast"><span id="toastMsg"></span></div>
+    <!-- Voice Assistant Button -->
+    <button class="voice-btn" id="voiceBtn" onclick="startVoice()">🎤</button>
 
-<script>
-/* ---------- helpers ---------- */
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const CATS=[
-  {n:'Khana',   e:'🍜', c:'#FF9F6B'},
-  {n:'Travel',  e:'🚌', c:'#6AA9FF'},
-  {n:'Bills',   e:'🧾', c:'#B78CFF'},
-  {n:'Shopping',e:'🛍️', c:'#FF7EB6'},
-  {n:'Medical', e:'💊', c:'#5FE0C0'},
-  {n:'Other',   e:'✨', c:'#FFD166'}
-];
-const catOf=n=>CATS.find(c=>c.n===n)||CATS[5];
-const KEY='kharcha_v1', BKEY='kharcha_budget_v1';
-const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const TODAY=ymd(new Date());
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=n=>'₹'+new Intl.NumberFormat('en-IN',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2}).format(n);
-const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
+    <script>
+        // --- LOGIN LOGIC ---
+        let savedPin = localStorage.getItem('app_pin');
+        let pinAttempts = 0;
 
-let items=[], budget=5000;
-const state={range:'month',tab:'home',editId:null,cat:'Khana',undo:null,timer:null};
+        function checkPinSetup() {
+            let lockTitle = document.getElementById('lockTitle');
+            let pinBtn = document.getElementById('pinBtn');
+            let lockIcon = document.getElementById('lockIcon');
+            let pinInput = document.getElementById('pinInput');
+            
+            if (!savedPin) {
+                lockTitle.innerText = "नया PIN सेट करें (4 अंक)";
+                pinBtn.innerText = "Set PIN";
+                lockIcon.innerText = "🛡️";
+            }
+        }
 
-try{items=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(items))items=[]}catch(e){items=[]}
-try{budget=Number(localStorage.getItem(BKEY))||5000}catch(e){budget=5000}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(items));localStorage.setItem(BKEY,String(budget))}catch(e){toast('Storage full / blocked 😕')}};
+        function handleLogin() {
+            let pin = document.getElementById('pinInput').value;
+            if (pin.length !== 4) { alert("कृपया 4 अंकों का PIN डालें!"); return; }
 
-function toast(msg,label,fn){
-  clearTimeout(state.timer);
-  $('#toastMsg').textContent=msg;
-  const old=$('#toast button'); if(old)old.remove();
-  if(label){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{fn&&fn();hideToast()};$('#toast').appendChild(b)}
-  $('#toast').classList.add('show');
-  state.timer=setTimeout(hideToast,3400);
-}
-const hideToast=()=>$('#toast').classList.remove('show');
+            if (!savedPin) {
+                // Set new pin
+                localStorage.setItem('app_pin', pin);
+                alert("✅ PIN सेट हो गया! अब आप ऐप इस्तेमाल कर सकते हैं।");
+                unlockApp();
+            } else {
+                // Check pin
+                if (pin === savedPin) {
+                    unlockApp();
+                } else {
+                    pinAttempts++;
+                    alert("❌ गलत PIN! कोशिश करें: " + pinAttempts);
+                    document.getElementById('pinInput').value = '';
+                }
+            }
+        }
 
-function animateNum(el,to){
-  const from=Number(el.dataset.v||0), t0=performance.now(), dur=700;
-  el.dataset.v=to;
-  function step(t){
-    const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
-    el.textContent=fmt(Math.round(from+(to-from)*e));
-    if(p<1)requestAnimationFrame(step);
-  } requestAnimationFrame(step);
-}
+        function unlockApp() {
+            document.getElementById('lockScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            }, 400);
+        }
 
-const filtered=()=>items.filter(e=>
-  state.range==='all'?true:
-  state.range==='today'?e.date===TODAY:
-  e.date.slice(0,7)===TODAY.slice(0,7)
-).sort((a,b)=>b.date.localeCompare(a.date)||b.ts-a.ts);
-const monthTotal=()=>items.filter(e=>e.date.slice(0,7)===TODAY.slice(0,7)).reduce((s,e)=>s+e.amount,0);
-const sum=a=>a.reduce((s,e)=>s+e.amount,0);
+        function resetApp() {
+            let confirmReset = prompt("यह आपका सारा डेटा डिलीट कर देगा! सुनिश्चित करने के लिए 'RESET' टाइप करें:");
+            if (confirmReset === 'RESET') {
+                localStorage.clear();
+                location.reload();
+            }
+        }
 
-/* ---------- render HOME ---------- */
-function renderHome(){
-  const f=filtered(), tot=sum(f);
-  $('#rangeLbl').textContent=state.range==='today'?'Aaj ka kharcha':state.range==='month'?'Is mahine ka kharcha':'Kul kharcha (hamesha ka)';
-  animateNum($('#total'),tot);
-  $('#countSub').textContent=f.length?`${f.length} entries · average ${fmt(tot/f.length)}` : 'Abhi koi entry nahi ✨';
+        // --- VOICE ASSISTANT LOGIC ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isRecording = false;
 
-  const mt=monthTotal(), pct=budget?Math.round(mt/budget*100):0;
-  $('#budTxt').textContent=`${fmt(mt)} / ${fmt(budget)}`;
-  $('#budPct').textContent=pct+'%';
-  $('#budFill').style.width=Math.min(100,pct)+'%';
-  $('#budFill').classList.toggle('over',pct>=100);
-  $('#budHint').textContent=pct>=100?`⚠️ Budget ${fmt(mt-budget)} se cross ho gaya`:`✅ ${fmt(Math.max(0,budget-mt))} abhi bache hain`;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN'; // Hindi language
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
 
-  if(!f.length){$('#list').innerHTML=`<div class="glass card empty"><i>🪙</i>Yahan kuch nahi.<br>Neeche <b>+</b> dabao aur pehla kharcha daalo.</div>`;return}
+            recognition.onresult = function(event) {
+                let transcript = event.results[0][0].transcript;
+                processVoiceText(transcript);
+            };
 
-  const y=new Date();y.setDate(y.getDate()-1);const YEST=ymd(y);
-  const groups={};
-  f.forEach(e=>(groups[e.date]=groups[e.date]||[]).push(e));
-  let html='',i=0;
-  for(const d of Object.keys(groups)){
-    const label=d===TODAY?'Aaj':d===YEST?'Kal':new Date(d+'T12:00:00').toLocaleDateString('hi-IN',{day:'numeric',month:'short',year:'numeric'});
-    html+=`<div class="grp"><span>${label}</span><span>${fmt(sum(groups[d]))}</span></div>`;
-    for(const e of groups[d]){
-      const c=catOf(e.cat);
-      html+=`<div class="item" data-id="${e.id}" style="--c:${c.c};animation-delay:${Math.min(i*.035,.35)}s">
-        <div class="emo">${c.e}</div>
-        <div class="mid"><b>${esc(e.note||c.n)}</b><span>${esc(e.cat)} · ${e.date.slice(8)}/${e.date.slice(5,7)}</span></div>
-        <div class="right"><b>${fmt(e.amount)}</b>
-          <div class="acts"><button data-act="edit" title="Edit">✏️</button><button data-act="del" title="Delete">🗑️</button></div>
-        </div></div>`; i++;
-    }
-  }
-  $('#list').innerHTML=html;
-}
+            recognition.onerror = function(event) {
+                alert("आवाज़ पहचानने में त्रुटि: " + event.error);
+                stopRecording();
+            };
 
-/* ---------- render INSIGHTS ---------- */
-function renderInsights(){
-  const f=filtered(), tot=sum(f);
-  $('#gRange').textContent='· '+(state.range==='today'?'Aaj':state.range==='month'?'Is mahine':'Sab');
-  animateNum($('#dcTotal'),tot);
+            recognition.onend = function() {
+                stopRecording();
+            };
+        }
 
-  const by={};f.forEach(e=>by[e.cat]=(by[e.cat]||0)+e.amount);
-  const rows=Object.entries(by).map(([n,v])=>({n,v,c:catOf(n).c,e:catOf(n).e})).sort((a,b)=>b.v-a.v);
-  const arcs=$('#arcs');arcs.innerHTML='';
-  const C=2*Math.PI*76;let start=0;const pending=[];
+        function startVoice() {
+            if (!recognition) {
+                alert("आपका फ़ोन या ब्राउज़र वॉइस असिस्टेंट सपोर्ट नहीं करता।");
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+            isRecording = true;
+            document.getElementById('voiceBtn').classList.add('recording');
+            document.getElementById('voiceBtn').innerText = "⏹️";
+            recognition.start();
+            
+            // Show text that we are listening
+            document.getElementById('note').placeholder = "सुन रहा हूँ...";
+        }
 
-  rows.forEach((r,k)=>{
-    const len=Math.max(0,r.v/tot*C-5);
-    const el=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    el.setAttribute('cx',100);el.setAttribute('cy',100);el.setAttribute('r',76);
-    el.setAttribute('fill','none');el.setAttribute('stroke',r.c);
-    el.setAttribute('stroke-width',22);el.setAttribute('stroke-linecap','round');
-    el.style.strokeDasharray=`0 ${C}`;el.style.strokeDashoffset='0';
-    el.style.transition='stroke-dasharray .9s cubic-bezier(.22,1,.36,1), stroke-dashoffset .9s cubic-bezier(.22,1,.36,1)';
-    el.style.transitionDelay=(k*.09)+'s';
-    arcs.appendChild(el);
-    pending.push({el,len,off:-start});start+=r.v/tot*C;
-  });
-  requestAnimationFrame(()=>requestAnimationFrame(()=>pending.forEach(p=>{
-    p.el.style.strokeDasharray=`${p.len} ${C}`;p.el.style.strokeDashoffset=p.off;
-  })));
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('voiceBtn').classList.remove('recording');
+            document.getElementById('voiceBtn').innerText = "🎤";
+            document.getElementById('note').placeholder = "जैसे: दुकान या दोस्तों के साथ";
+        }
 
-  $('#legend').innerHTML=rows.length?rows.map((r,k)=>`
-    <div class="leg" style="--c:${r.c};animation-delay:${k*.07}s">
-      <span class="dot"></span><span class="nm">${r.e} ${esc(r.n)}</span>
-      <span class="pc">${Math.round(r.v/tot*100)}%</span><span class="am">${fmt(r.v)}</span>
-    </div>
-    <div class="mini" style="--c:${r.c}"><i data-w="${r.v/tot*100}"></i></div>`).join(''):'';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>$$('#legend .mini i').forEach(b=>b.style.width=b.dataset.w+'%')));
+        function processVoiceText(text) {
+            // Convert Hindi numbers to digits (e.g., "bees" -> 20)
+            const hindiNumbers = { 'एक': 1, 'दो': 2, 'तीन': 3, 'चार': 4, 'पांच': 5, 'छह': 6, 'सात': 7, 'आठ': 8, 'नौ': 9, 'दस': 10, 'बीस': 20, 'तीस': 30, 'चालीस': 40, 'पचास': 50, 'सौ': 100, 'हज़ार': 1000 };
+            let processedText = text.toLowerCase();
+            
+            for (let [word, num] of Object.entries(hindiNumbers)) {
+                processedText = processedText.replace(word, num);
+            }
 
-  if(rows.length)$('#hiCard').innerHTML=`🏆 <b>Sabse zyada:</b> ${rows[0].e} ${esc(rows[0].n)} me ${fmt(rows[0].v)} (${Math.round(rows[0].v/tot*100)}%)`;
-  else $('#hiCard').textContent='✨ Abhi data nahi hai — pehle ek kharcha add karo.';
+            // Extract Numbers (Amount)
+            let amountMatch = processedText.match(/\d+/);
+            let amount = amountMatch ? parseInt(amountMatch[0]) : null;
 
-  // last 7 days
-  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(ymd(d))}
-  const vals=days.map(d=>sum(items.filter(e=>e.date===d)));
-  const mx=Math.max(...vals,1), wd=['र','सो','मं','बु','गु','शु','श'];
-  $('#bars').innerHTML=days.map((d,i)=>`
-    <div class="barcol"><div class="bar ${i===6?'today':''}" data-h="${Math.max(5,vals[i]/mx*100)}" style="--d:${i*.07}s"></div>
-    <small>${wd[new Date(d+'T12:00:00').getDay()]}<b>${d.slice(8)}</b></small></div>`).join('');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>$$('#bars .bar').forEach(b=>b.style.setProperty('--h',b.dataset.h+'%'))));
-}
+            // Determine Category based on keywords
+            let category = "Other";
+            let foodWords = ['खाना', 'खाया', 'चाय', 'समोसा', 'वड़ा', 'पाव', 'भोजन', 'lunch', 'dinner', 'swiggy', 'zomato'];
+            let travelWords = ['ऑटो', 'रिक्शा', 'पेट्रोल', 'बस', 'ट्रेन', 'कैब', 'travel', 'ola', 'uber'];
+            let shopWords = ['कपड़े', 'शर्ट', 'पैंट', 'जूते', 'खरीदारी', 'shopping', 'amazon', 'flipkart'];
+            let billWords = ['रिचार्ज', 'बिल', 'बिजली', 'गैस', 'इंटरनेट', 'wifi', 'recharge'];
 
-function renderSettings(){
-  if(document.activeElement!==$('#budInput'))$('#budInput').value=budget;
-  $('#storeInfo').textContent=`${items.length} entries · data sirf is phone ke browser me hai. Server nahi.`;
-}
-function render(){renderHome();renderInsights();renderSettings()}
+            if (foodWords.some(w => processedText.includes(w))) category = "Food";
+            else if (travelWords.some(w => processedText.includes(w))) category = "Travel";
+            else if (shopWords.some(w => processedText.includes(w))) category = "Shopping";
+            else if (billWords.some(w => processedText.includes(w))) category = "Bills";
+            else if (processedText.includes('मूवी') || processedText.includes('movie')) category = "Entertainment";
 
-/* ---------- navigation ---------- */
-function setRange(r){
-  state.range=r;
-  $('#seg').style.setProperty('--i',['today','month','all'].indexOf(r));
-  $$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
-  buzz(8);render();
-}
-$('#seg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRange(b.dataset.r)});
-function setTab(t){
-  state.tab=t;
-  $$('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  $$('.view').forEach(v=>v.classList.remove('active'));
-  const v=$('#v-'+t);void v.offsetWidth;v.classList.add('active');
-  buzz(8);if(t==='graph')renderInsights();
-}
-$$('.tabbar button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+            if (amount) {
+                document.getElementById('amount').value = amount;
+                document.getElementById('category').value = category;
+                document.getElementById('note').value = text; // Original text as note
 
-/* ---------- sheet ---------- */
-$('#chips').innerHTML=CATS.map(c=>`<button class="chip" data-n="${c.n}" style="--c:${c.c}">${c.e} ${c.n}</button>`).join('');
-function pickCat(n){state.cat=n;$$('#chips .chip').forEach(c=>c.classList.toggle('on',c.dataset.n===n));buzz(6)}
-$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b)pickCat(b.dataset.n)});
+                // Auto Add
+                addExpense();
+                alert(`✅ सफलतापूर्वक जोड़ा गया:\nराशि: ₹${amount}\nश्रेणी: ${category}\nविवरण: ${text}`);
+            } else {
+                alert("❌ माफ़ कीजिए, मैं राशि (Amount) नहीं समझ पाया। कृपया दोबारा बोलें, जैसे: 'मैंने 50 रुपये की चाय पी'");
+            }
+        }
 
-function openSheet(item){
-  state.editId=item?item.id:null;
-  $('#sheetTitle').textContent=item?'Kharcha edit karo ✏️':'Naya kharcha ➕';
-  $('#save').textContent=item?'Update karo':'Add karo';
-  $('#fAmt').value=item?item.amount:'';
-  $('#fNote').value=item?item.note:'';
-  $('#fDate').value=item?item.date:TODAY;
-  pickCat(item?item.cat:'Khana');
-  $('#wrap').classList.add('open');
-  setTimeout(()=>$('#fAmt').focus(),380);
-}
-function closeSheet(){$('#wrap').classList.remove('open');state.editId=null}
-$('#fab').onclick=()=>{buzz(12);openSheet(null)};
-$('#cancel').onclick=closeSheet;
-$('#wrap').addEventListener('click',e=>{if(e.target.id==='wrap')closeSheet()});
+        // --- APP MAIN LOGIC ---
+        let budget = localStorage.getItem('budget') ? parseFloat(localStorage.getItem('budget')) : 15000;
+        let expenses = localStorage.getItem('expenses') ? JSON.parse(localStorage.getItem('expenses')) : [];
+        const categoryIcons = { Food: '🍔', Travel: '🚗', Shopping: '🛍️', Bills: '⚡', Entertainment: '🎬', Other: '💡' };
 
-$('#save').onclick=()=>{
-  const raw=$('#fAmt').value.replace(/,/g,'').trim(), amt=parseFloat(raw);
-  if(!isFinite(amt)||amt<=0){toast('Sahi amount daalo 🙏');$('#fAmt').focus();buzz(30);return}
-  const date=$('#fDate').value||TODAY, note=$('#fNote').value.trim();
-  const before=monthTotal();
-  if(state.editId){
-    const i=items.findIndex(x=>x.id===state.editId);
-    if(i>-1)items[i]={...items[i],amount:amt,cat:state.cat,note,date};
-    toast('Update ho gaya ✅');
-  }else{
-    items.unshift({id:'e'+Date.now()+Math.random().toString(36).slice(2,6),amount:amt,cat:state.cat,note,date,ts:Date.now()});
-    toast(`${fmt(amt)} add ho gaya 💎`);
-  }
-  save();closeSheet();buzz(14);render();
-  const after=monthTotal(), b=budget;
-  if(b&&before<b&&after>=b)setTimeout(()=>toast(`🚨 Budget cross! ${fmt(after-b)} zyada kharch ho gaya`),700);
-  else if(b&&before<b*.8&&after>=b*.8)setTimeout(()=>toast('⚠️ Budget ka 80% ho gaya, sambhal ke 😄'),700);
-};
+        let ctx = document.getElementById('expenseChart').getContext('2d');
+        let expenseChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: ['खाना', 'सफ़र', 'खरीदारी', 'बिल', 'मस्ती', 'अन्य'], datasets: [{ data: [0, 0, 0, 0, 0, 0], backgroundColor: ['#ff4757', '#00f2fe', '#a855f7', '#ffa502', '#ff2a85', '#2ed573'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#ffffff', boxWidth: 10, font: { size: 10, family: 'Plus Jakarta Sans' } } } }, cutout: '70%' }
+        });
 
-/* ---------- edit / delete / undo ---------- */
-$('#list').addEventListener('click',e=>{
-  const btn=e.target.closest('[data-act]');if(!btn)return;
-  const row=btn.closest('.item'), id=row.dataset.id, act=btn.dataset.act;
-  if(act==='edit'){const it=items.find(x=>x.id===id);if(it)openSheet(it);return}
-  const idx=items.findIndex(x=>x.id===id);if(idx<0)return;
-  const removed=items[idx];
-  row.classList.add('gone');buzz(18);
-  setTimeout(()=>{
-    items.splice(idx,1);save();render();
-    toast(`${fmt(removed.amount)} hata diya`,'UNDO',()=>{items.splice(Math.min(idx,items.length),0,removed);save();render();toast('Wapas aa gaya ↩️')});
-  },280);
-});
+        function changeBudget() {
+            let newBudget = prompt("अपना नया मासिक बजट सेट करें (₹):", budget);
+            if (newBudget !== null && !isNaN(newBudget) && newBudget > 0) {
+                budget = parseFloat(newBudget);
+                localStorage.setItem('budget', budget);
+                updateUI();
+            }
+        }
 
-/* ---------- settings actions ---------- */
-$('#saveBud').onclick=()=>{
-  const v=parseFloat($('#budInput').value);
-  if(!isFinite(v)||v<=0){toast('Budget sahi daalo 🙏');return}
-  budget=v;save();render();buzz(14);toast(`Budget ${fmt(v)} set ✅`);$('#budInput').blur();
-};
-$('#exp').onclick=()=>{
-  if(!items.length){toast('Export ke liye pehle entry daalo 🙂');return}
-  const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
-  const csv='date,amount,category,note\n'+items.map(e=>[e.date,e.amount,e.cat,q(e.note)].join(',')).join('\n');
-  try{
-    const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
-    const a=document.createElement('a');a.href=url;a.download='kharcha-backup.csv';a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);toast('CSV download ho gaya 📤');
-  }catch(e){navigator.clipboard?.writeText(csv).then(()=>toast('Clipboard me copy ho gaya 📋'))}
-};
-$('#imp').onclick=()=>$('#file').click();
-$('#file').onchange=ev=>{
-  const f=ev.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    const t=String(r.result).replace(/^\ufeff/,''),rows=[],parse=(txt)=>{
-      let cur='',row=[],q=false;
-      for(let i=0;i<txt.length;i++){const c=txt[i];
-        if(q){if(c==='"'){if(txt[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
-        else if(c==='"')q=true;
-        else if(c===','){row.push(cur);cur=''}
-        else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur=''}
-        else if(c!=='\r')cur+=c;
-      } if(cur||row.length){row.push(cur);rows.push(row)} return rows;
-    };
-    parse(t);
-    let n=0;
-    rows.slice(1).forEach(c=>{
-      const amt=parseFloat(c[1]);if(!isFinite(amt)||amt<=0||!c[0])return;
-      items.push({id:'i'+Date.now()+Math.random().toString(36).slice(2,6),date:c[0],amount:amt,
-        cat:CATS.some(x=>x.n===c[2])?c[2]:'Other',note:(c[3]||'').trim(),ts:Date.now()+n});n++;
-    });
-    save();render();toast(`${n} entries import ho gaye 📥`);ev.target.value='';
-  };
-  r.readAsText(f);
-};
-$('#clr').onclick=()=>$('#confirm').classList.add('show');
-$('#noClr').onclick=()=>$('#confirm').classList.remove('show');
-$('#yesClr').onclick=()=>{
-  const backup=items.slice();items=[];save();render();$('#confirm').classList.remove('show');
-  toast('Sab clear ✅','UNDO',()=>{items=backup;save();render();toast('Sab wapas ↩️')});
-};
+        function addExpense() {
+            let amount = parseFloat(document.getElementById('amount').value);
+            let category = document.getElementById('category').value;
+            let note = document.getElementById('note').value.trim() || category;
+            if (isNaN(amount) || amount <= 0) { alert("कृपया सही राशि डालें!"); return; }
+            
+            let newTx = { id: Date.now(), amount: amount, category: category, note: note, date: new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short' }) };
+            expenses.unshift(newTx);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            document.getElementById('amount').value = '';
+            document.getElementById('note').value = '';
+            updateUI();
+        }
 
-/* ---------- icon + manifest (install-ready) ---------- */
-(function(){
-  try{
-    const cv=document.createElement('canvas');cv.width=cv.height=512;const x=cv.getContext('2d');
-    const g=x.createLinearGradient(0,0,512,512);g.addColorStop(0,'#8AA8FF');g.addColorStop(1,'#C79BFF');
-    x.fillStyle=g;x.beginPath();x.roundRect(0,0,512,512,86);x.fill();
-    x.fillStyle='rgba(255,255,255,.18)';x.beginPath();x.roundRect(28,28,456,230,60);x.fill();
-    x.fillStyle='#fff';x.font='700 270px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText('₹',256,270);
-    const png=cv.toDataURL('image/png');
-    $('#icon').href=png;
-    const small=document.createElement('canvas');small.width=small.height=192;
-    small.getContext('2d').drawImage(cv,0,0,192,192);
-    const mf={name:'Kharcha — Glassy Expense Tracker',short_name:'Kharcha',start_url:'.',display:'standalone',
-      background_color:'#080a16',theme_color:'#0b0d1a',
-      icons:[{src:small.toDataURL('image/png'),sizes:'192x192',type:'image/png'},{src:png,sizes:'512x512',type:'image/png'}]};
-    $('#mf').href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
-  }catch(e){}
-})();
+        function deleteExpense(id) {
+            expenses = expenses.filter(item => item.id !== id);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            updateUI();
+        }
 
-/* ---------- init ---------- */
-$('#fDate').value=TODAY;
-pickCat('Khana');
-$('#seg').style.setProperty('--i',1);
-render();
-</script>
+        function updateUI() {
+            let total = expenses.reduce((sum, item) => sum + item.amount, 0);
+            let remaining = budget - total;
+            document.getElementById('budgetDisplay').innerText = `₹${budget.toLocaleString('en-IN')} ✎`;
+            document.getElementById('totalExpense').innerText = `₹${total.toLocaleString('en-IN')}`;
+            let remEl = document.getElementById('remainingBalance');
+            remEl.innerText = `₹${remaining.toLocaleString('en-IN')}`;
+            remEl.style.color = remaining < 0 ? '#ff4757' : '#ffffff';
+            
+            document.getElementById('txCount').innerText = `${expenses.length} प्रविष्टियाँ`;
+            let listEl = document.getElementById('expenseList');
+            listEl.innerHTML = '';
+            if (expenses.length === 0) listEl.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0;">अभी कोई खर्च नहीं जोड़ा गया।</p>`;
+            
+            expenses.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'tx-item';
+                div.innerHTML = `
+                    <div class="tx-left">
+                        <div class="tx-icon">${categoryIcons[item.category] || '💡'}</div>
+                        <div>
+                            <div class="tx-title">${item.note}</div>
+                            <div class="tx-date">${item.date} • ${item.category}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span class="tx-amount">-₹${item.amount.toLocaleString('en-IN')}</span>
+                        <button class="btn-del" onclick="deleteExpense(${item.id})">×</button>
+                    </div>`;
+                listEl.appendChild(div);
+            });
+            
+            let catTotals = { Food: 0, Travel: 0, Shopping: 0, Bills: 0, Entertainment: 0, Other: 0 };
+            expenses.forEach(i => { if (catTotals[i.category] !== undefined) catTotals[i.category] += i.amount; });
+            expenseChart.data.datasets[0].data = Object.values(catTotals);
+            expenseChart.update();
+        }
+
+        function backupData() {
+            let dataStr = JSON.stringify({ budget: budget, expenses: expenses });
+            let encodedData = btoa(dataStr);
+            navigator.clipboard.writeText(encodedData).then(() => {
+                alert("✅ डेटा कॉपी हो गया है!\n\nइसे अपने WhatsApp (खुद को) या Notes में सेव कर लें।");
+            }).catch(err => {
+                prompt("कॉपी नहीं हो पाया, इस टेक्स्ट को कॉपी करें:", encodedData);
+            });
+        }
+
+        function restoreData() {
+            let input = prompt("अपना बैकअप कोड यहाँ पेस्ट करें:");
+            if (!input) return;
+            try {
+                let decodedStr = atob(input);
+                let data = JSON.parse(decodedStr);
+                if (data.budget !== undefined && data.expenses !== undefined) {
+                    localStorage.setItem('budget', data.budget);
+                    localStorage.setItem('expenses', JSON.stringify(data.expenses));
+                    alert("🎉 डेटा रिस्टोर हो गया! ऐप रीस्टार्ट हो रहा है...");
+                    location.reload();
+                } else {
+                    alert("❌ गलत कोड! कृपया सही बैकअप पेस्ट करें।");
+                }
+            } catch (e) {
+                alert("❌ अमान्य कोड! कृपया जाँचें कि पूरा टेक्स्ट कॉपी किया है।");
+            }
+        }
+
+        // Init
+        checkPinSetup();
+        updateUI();
+    </script>
 </body>
 </html>
