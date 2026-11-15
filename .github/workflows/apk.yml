@@ -16,15 +16,16 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      - name: Install packages
+        run: npm install
 
-      - run: npm install
+      - name: Add Android project
+        run: npx cap add android
 
-      - run: npx cap add android
-
-      - run: npx cap sync android
+      - name: Sync web files
+        run: npx cap sync android
 
       - name: Build APK
         working-directory: android
