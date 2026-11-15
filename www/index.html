@@ -97,13 +97,11 @@ input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18)}
 <body>
 <div class="bg"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
 
-<!-- LOGIN / SETUP SCREEN -->
 <div class="lockWrap" id="lockWrap">
   <div class="glass lockCard" id="lockCard">
     <div style="font-size:44px">💎</div>
     <h2 id="lockTitle">Welcome to Kharcha</h2>
     <p class="sub" id="lockSub">Your personal expense tracker</p>
-
     <div id="setupBox">
       <input id="sName" type="text" placeholder="Your name" maxlength="30" autocomplete="name">
       <input id="sPin" type="password" inputmode="numeric" maxlength="4" placeholder="Create 4-digit PIN">
@@ -111,7 +109,6 @@ input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18)}
       <button class="btn" id="setupBtn">Create Account &amp; Start</button>
       <p class="sub">This PIN is stored only on your phone. Please remember it.</p>
     </div>
-
     <div id="loginBox" style="display:none">
       <p class="sub" id="welcomeTxt" style="font-size:15px;color:#fff"></p>
       <input id="lPin" type="password" inputmode="numeric" maxlength="4" placeholder="Enter your 4-digit PIN">
@@ -135,6 +132,7 @@ input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18)}
       <div class="glass card">
         <div class="lbl">🎤 Voice Assistant</div>
         <button class="voiceBtn" id="voiceBtn">🎤 Tap &amp; Speak</button>
+        <button class="btn ghost full" id="voiceStopBtn" style="display:none;margin-top:10px">⏹ Band Karo / Stop Listening</button>
         <div class="sub" id="voiceStatus">Try saying: "Maine 20 ka vada pav khaya" or "200 ka petrol dalwaya"</div>
       </div>
 
@@ -164,13 +162,11 @@ input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18)}
         <div class="two"><input id="oldPin" type="password" inputmode="numeric" maxlength="4" placeholder="Current PIN"><input id="newPin" type="password" inputmode="numeric" maxlength="4" placeholder="New PIN"></div>
         <button class="btn ghost full" id="changePin" style="margin-top:10px">Change PIN</button>
       </div>
-
       <div class="glass card">
         <div class="lbl">Set Monthly Budget</div>
         <div class="two" style="margin-top:12px"><input id="budInput" type="number" inputmode="numeric" placeholder="5000"><button class="btn" id="saveBud">Save</button></div>
         <div class="sub">You will receive an alert at 80% and 100% of your budget. 🔔</div>
       </div>
-
       <div class="glass card">
         <div class="lbl">Backup &amp; Data</div>
         <div class="row"><div><div class="t">📤 Export to CSV</div><div class="d">Download a backup file</div></div><button class="btn ghost" id="exp">Export</button></div>
@@ -180,7 +176,7 @@ input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(138,168,255,.18)}
         <div class="row"><div><div class="t">🗑️ Delete All Data</div><div class="d">This requires confirmation</div></div><button class="btn ghost" id="clr">Clear</button></div>
         <div class="confirm" id="confirm"><button class="btn danger" id="yesClr" style="flex:1">Yes, delete all</button><button class="btn ghost" id="noClr" style="flex:1">Cancel</button></div>
       </div>
-      <div class="sub" style="text-align:center">Kharcha v2.0 · Login + Voice Assistant 🎤</div>
+      <div class="sub" style="text-align:center">Kharcha v2.1 · Native Voice 🎤</div>
     </section>
   </main>
 
@@ -229,7 +225,6 @@ const filtered=()=>items.filter(e=>state.range==='all'?true:state.range==='today
 const monthTotal=()=>items.filter(e=>e.date.slice(0,7)===TODAY.slice(0,7)).reduce((s,e)=>s+e.amount,0);
 const sum=a=>a.reduce((s,e)=>s+e.amount,0);
 
-/* LOGIN */
 function hashPin(pin){let h=0;const s='kharcha_secret_'+pin;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0}return String(h)}
 function showLoginMode(){
   if(loginData){$('#setupBox').style.display='none';$('#loginBox').style.display='block';$('#lockTitle').textContent='Welcome Back';$('#lockSub').textContent='Please enter your PIN to continue.';$('#welcomeTxt').textContent='Hello, '+loginData.name+' 👋';setTimeout(()=>$('#lPin').focus(),300)}
@@ -259,7 +254,6 @@ $('#changePin').onclick=()=>{
   loginData.pin=hashPin(n);localStorage.setItem(LKEY,JSON.stringify(loginData));$('#oldPin').value='';$('#newPin').value='';toast('PIN changed successfully. ✅');buzz(15);
 };
 
-/* HOME + GRAPH */
 function renderHome(){
   const f=filtered(),tot=sum(f);
   $('#rangeLbl').textContent=state.range==='today'?"Today's Expenses":state.range==='month'?"This Month's Expenses":"Total Expenses (All Time)";
@@ -303,7 +297,6 @@ $('#seg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)s
 function setTab(t){$$('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$$('.view').forEach(v=>v.classList.remove('active'));const v=$('#v-'+t);void v.offsetWidth;v.classList.add('active');buzz(8);if(t==='graph')renderInsights()}
 $$('.tabbar button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
 
-/* ADD / EDIT */
 $('#chips').innerHTML=CATS.map(c=>'<button class="chip" data-n="'+c.n+'" style="--c:'+c.c+'">'+c.e+' '+c.n+'</button>').join('');
 function pickCat(n){state.cat=n;$$('#chips .chip').forEach(c=>c.classList.toggle('on',c.dataset.n===n))}
 $('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b)pickCat(b.dataset.n)});
@@ -331,7 +324,7 @@ $('#list').addEventListener('click',e=>{
   setTimeout(()=>{items.splice(idx,1);save();render();toast(fmt(removed.amount)+' deleted.','UNDO',()=>{items.splice(Math.min(idx,items.length),0,removed);save();render();toast('Restored successfully. ↩️')})},280);
 });
 
-/* VOICE ASSISTANT */
+/* VOICE ASSISTANT - NATIVE */
 const convertDigits=s=>String(s).replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d));
 const WORD_NUM={'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'fifteen':15,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,'hundred':100,'thousand':1000,'ek':1,'do':2,'teen':3,'char':4,'chaar':4,'paanch':5,'panch':5,'chhah':6,'saat':7,'aath':8,'nau':9,'das':10,'gyarah':11,'barah':12,'bees':20,'tees':30,'chaalees':40,'chalis':40,'pachaas':50,'pachas':50,'saath':60,'sattar':70,'assi':80,'nabbe':90,'sau':100,'hazaar':1000,'hazar':1000,'एक':1,'दो':2,'तीन':3,'चार':4,'पाँच':5,'छह':6,'सात':7,'आठ':8,'नौ':9,'दस':10,'बीस':20,'तीस':30,'चालीस':40,'पचास':50,'साठ':60,'सत्तर':70,'अस्सी':80,'नब्बे':90,'सौ':100,'हज़ार':1000,'हजार':1000};
 function parseAmount(text){
@@ -353,7 +346,7 @@ function detectCat(text){
   return 'Other';
 }
 function cleanNote(text,cat,amt){
-  const stop=new Set(['maine','mene','mai','maine','ne','ka','ki','ke','ko','par','me','mein','rupees','rupay','rupaye','rupaiya','rs','khaya','khayi','khaaya','khaye','piya','pii','liya','liye','diya','diye','dalwaya','dalvaya','lagaya','laga','hua','hue','ho','gaya','gayi','the','a','an','i','spent','on','for','मैंने','मैने','का','की','के','को','रुपये','रुपए','खाया','खायी','लिया','दिया','हुआ']);
+  const stop=new Set(['maine','mene','mai','ne','ka','ki','ke','ko','par','me','mein','rupees','rupay','rupaye','rupaiya','rs','khaya','khayi','khaaya','khaye','piya','pii','liya','liye','diya','diye','dalwaya','dalvaya','lagaya','laga','hua','hue','ho','gaya','gayi','the','a','an','i','spent','on','for','मैंने','मैने','का','की','के','को','रुपये','रुपए','खाया','खायी','लिया','दिया','हुआ']);
   let t=convertDigits(text.toLowerCase()).replace(/[₹,।|]/g,' ');
   if(amt)t=t.replace(String(amt),' ');
   const words=t.split(/\s+/).filter(w=>w&&!stop.has(w)&&!(w in WORD_NUM)&&!/^\d+$/.test(w));
@@ -362,6 +355,7 @@ function cleanNote(text,cat,amt){
   return note.charAt(0).toUpperCase()+note.slice(1,50);
 }
 function handleVoiceText(text){
+  setListening(false);
   $('#voiceStatus').textContent='You said: "'+text+'"';
   const amt=parseAmount(text),cat=detectCat(text),note=cleanNote(text,cat,amt);
   if(!(amt>0)){toast('Sorry, I could not understand the amount. Please try again.');openSheet(null);$('#fNote').value=text;return}
@@ -369,25 +363,63 @@ function handleVoiceText(text){
   items.unshift(entry);save();closeSheet();render();buzz(20);
   toast('🎤 Voice: '+fmt(amt)+' added for '+note+' ('+cat+')','UNDO',()=>{items=items.filter(x=>x.id!==entry.id);save();render()});
 }
-let listening=false;
-function startVoice(){
-  if(listening)return;
+let listening=false, webRec=null, listenTimer=null;
+function getSpeechCap(){try{return window.Capacitor&&window.Capacitor.Plugins?window.Capacitor.Plugins.SpeechRecognition:null}catch(e){return null}}
+function setListening(on){
+  listening=on;
+  const vb=$('#voiceBtn'),sb=$('#sheetVoiceBtn'),stopb=$('#voiceStopBtn');
+  if(vb){vb.classList.toggle('listening',on);vb.textContent=on?'🔴 Listening... Tap again to stop':'🎤 Tap & Speak'}
+  if(sb){sb.textContent=on?'🔴 Listening... Tap again to stop':'🎤 Add by Voice'}
+  if(stopb)stopb.style.display=on?'block':'none';
+  clearTimeout(listenTimer);
+  if(on){const vs=$('#voiceStatus');if(vs)vs.textContent='Listening... Please speak now.';listenTimer=setTimeout(()=>{if(listening){stopVoice();toast('Listening stopped. Please try again.');}},12000)}
+}
+async function stopVoice(){
+  if(!listening)return;
+  clearTimeout(listenTimer);
+  try{const cap=getSpeechCap();if(cap&&cap.stop)await cap.stop()}catch(e){}
+  try{if(webRec)webRec.stop()}catch(e){}
+  setListening(false);
+}
+async function startVoice(){
+  if(listening){stopVoice();return}
+  const cap=getSpeechCap();
+  const isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+  if(cap&&isNative){
+    try{
+      const avail=await cap.available();
+      if(avail&&avail.available===false){toast('Speech service is not available. Please update the Google app.');return}
+      let perm=await cap.checkPermissions();
+      if(!perm||perm.speechRecognition!=='granted'){
+        perm=await cap.requestPermissions();
+        if(!perm||perm.speechRecognition!=='granted'){toast('Microphone permission is required. Go to Phone Settings > Apps > Kharcha > Permissions > Microphone > Allow.');return}
+      }
+      setListening(true);
+      const res=await cap.start({language:'hi-IN',maxResults:1,partialResults:false,popup:false});
+      setListening(false);
+      const txt=res&&res.matches&&res.matches[0];
+      if(txt)handleVoiceText(txt);else toast('I could not hear anything. Please try again.');
+    }catch(e){
+      setListening(false);
+      const vs=$('#voiceStatus');if(vs)vs.textContent='Voice stopped. Tap the microphone to try again.';
+    }
+    return;
+  }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){toast('Voice is not supported on this device. Please type the expense.');return}
   try{
-    const rec=new SR();rec.lang='hi-IN';rec.interimResults=false;rec.maxAlternatives=1;listening=true;
-    $('#voiceBtn').classList.add('listening');$('#voiceBtn').textContent='🔴 Listening... Please speak';$('#sheetVoiceBtn').textContent='🔴 Listening...';
-    $('#voiceStatus').textContent='Listening... Please speak now.';
-    rec.onresult=e=>{const txt=e.results[0][0].transcript;handleVoiceText(txt)};
-    rec.onerror=e=>{toast(e.error==='not-allowed'?'Microphone permission is required. Please allow it in Settings.':'Voice error: '+e.error);};
-    rec.onend=()=>{listening=false;$('#voiceBtn').classList.remove('listening');$('#voiceBtn').textContent='🎤 Tap & Speak';$('#sheetVoiceBtn').textContent='🎤 Add by Voice'};
-    rec.start();
-  }catch(err){listening=false;toast('Could not start the microphone.')}
+    webRec=new SR();webRec.lang='hi-IN';webRec.interimResults=false;webRec.maxAlternatives=1;
+    setListening(true);
+    webRec.onresult=e=>{const txt=e.results[0][0].transcript;handleVoiceText(txt)};
+    webRec.onerror=e=>{setListening(false);toast(e.error==='not-allowed'?'Microphone permission is required. Please allow it from Settings.':'Voice error: '+e.error)};
+    webRec.onend=()=>setListening(false);
+    webRec.start();
+  }catch(err){setListening(false);toast('Could not start the microphone.')}
 }
 $('#voiceBtn').onclick=startVoice;
 $('#sheetVoiceBtn').onclick=startVoice;
+const stopBtnEl=$('#voiceStopBtn');if(stopBtnEl)stopBtnEl.onclick=stopVoice;
 
-/* SETTINGS */
 $('#saveBud').onclick=()=>{const v=parseFloat($('#budInput').value);if(!isFinite(v)||v<=0){toast('Please enter a valid budget.');return}budget=v;save();render();buzz(14);toast('Budget set to '+fmt(v)+'. ✅');$('#budInput').blur()};
 $('#exp').onclick=()=>{
   if(!items.length){toast('Please add an entry before exporting.');return}
@@ -411,7 +443,6 @@ $('#clr').onclick=()=>$('#confirm').classList.add('show');
 $('#noClr').onclick=()=>$('#confirm').classList.remove('show');
 $('#yesClr').onclick=()=>{const backup=items.slice();items=[];save();render();$('#confirm').classList.remove('show');toast('All data deleted.','UNDO',()=>{items=backup;save();render();toast('All data restored. ↩️')})};
 
-/* INIT */
 $('#fDate').value=TODAY;pickCat('Khana');$('#seg').style.setProperty('--i',1);showLoginMode();render();
 </script>
 </body>
